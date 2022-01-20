@@ -46,13 +46,13 @@ def FA(N, dim, x_min, x_max, iterate_max, fitness):
                 # 如果前面的优于后面的，则往对应位置移动
                 if I[I_range_index[j]] < I[I_range_index[i]]:
                     r_ij = sum((x[I_range_index[i], :] - x[I_range_index[j], :]) ** 2)
-                    x[I_range_index[i], :] = x[I_range_index[i], :] + np.exp(-gamma * r_ij) * (x[I_range_index[j], :] - x[I_range_index[i], :]) + alpha * (np.random.rand() - 0.5)
+                    x[I_range_index[i], :] = x[I_range_index[i], :] + np.exp(-gamma * r_ij) * (x[I_range_index[j], :] - x[I_range_index[i], :]) + alpha * (np.random.rand(dim) - 0.5)
+                    # 更新第i只萤火虫的解
+                    I[I_range_index[i]] = fitness(x[I_range_index[i], :])
 
-                # 更新第i只萤火虫的解
-                I[I_range_index[i]] = fitness(x[I_range_index[i], :])
-                # 对萤火虫按照适应度进行排序
-                range_list = sorted(enumerate(I), key=lambda I_zip: I_zip[1])
-                I_range_index = [ele[0] for ele in range_list]
+        # 对萤火虫按照适应度进行排序
+        range_list = sorted(enumerate(I), key=lambda I_zip: I_zip[1])
+        I_range_index = [ele[0] for ele in range_list]
 
         iterate = iterate + 1
     return I[I_range_index[0]], x[I_range_index[0], :]
