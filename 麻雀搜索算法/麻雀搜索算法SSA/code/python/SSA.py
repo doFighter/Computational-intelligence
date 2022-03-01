@@ -56,12 +56,15 @@ def SSA(N, dim, x_min, x_max, iterate_max, fitness):
         # 按照论文算法框架图，所有生产者是统一执行位置更新，见公式(3)
         if np.random.rand() < ST:
             for i in range(PD):
-                x_new[Fx_range_index[i], :] = x[Fx_range_index[i], :] * np.exp(-Fx_range_index[i] / (np.random.random([1, dim]) * iterate_max))
+                x_new[Fx_range_index[i], :] = x[Fx_range_index[i], :] * \
+                    np.exp(-Fx_range_index[i] /
+                           (np.random.random([1, dim]) * iterate_max))
         else:
             # 论文中的公式描述有点问题，前半部分描述的是指定了对应麻雀对应维度，即为标量，而后面乘的却又是向量，赋给的又是标量，因此在这里实现了两种写法
             # 在对Sphere函数测试中，发现第一种方式效果更好
             # 第一种：按照向量写法，即每个位置只有一个alpha
-            x_new[Fx_range_index[: PD], :] = x[Fx_range_index[: PD], :] * np.random.random([PD, 1])
+            x_new[Fx_range_index[: PD], :] = x[Fx_range_index[: PD],
+                                               :] * np.random.random([PD, 1])
             # 第二种：按照标量写法，即每个位置的对应维度都有一个随机alpha
             # x_new[Fx_range_index[: PD], :] = x[Fx_range_index[: PD], :] * np.random.random([PD, dim])
 
@@ -69,20 +72,28 @@ def SSA(N, dim, x_min, x_max, iterate_max, fitness):
         for i in range(PD, N):
             if Fx_range_index[i] > N/2:
                 # 公式(4)和公式(3)一样，Q应该是对应维度都不同
-                x_new[Fx_range_index[i], :] = np.random.random([1, dim]) * np.exp((x_worst - x[Fx_range_index[i], :])/(Fx_range_index[i]**2))
+                x_new[Fx_range_index[i], :] = np.random.random(
+                    [1, dim]) * np.exp((x_worst - x[Fx_range_index[i], :])/(Fx_range_index[i]**2))
             else:
                 A = np.array([np.random.choice([1, -1]) for i in range(dim)])
                 A_inv = np.dot(A.T, 1/np.dot(A, A.T))
-                x_new[Fx_range_index[i], :] = x_best + np.abs(x[Fx_range_index[i], :] - x_best) * A_inv
+                x_new[Fx_range_index[i], :] = x_best + \
+                    np.abs(x[Fx_range_index[i], :] - x_best) * A_inv
 
         # 侦察麻雀更新，公式(5):需要说明的是，在原文中并未说明侦察麻雀是哪些，只是描述了占总数的10%~20%，原文选取10%。这里就直接按照索引进行更新
         for i in range(SD):
             f_i = fitness(x_new[i, :])
             if f_i > f_g:
-                x_new[i, :] = x_best + np.random.random([1, dim]) * np.abs(x_new[i, :] - x_best)
+                x_new[i, :] = x_best + \
+                    np.random.random([1, dim]) * np.abs(x_new[i, :] - x_best)
             elif f_i == f_g:
-                x_new[i, :] = x_new[i, :] + np.random.choice([1, -1]) * (np.abs(x_new[i, :] - x_worst)/(f_i - f_w + varepsilon))
+                k = -1 + np.random.random() * 2
+                x_new[i, :] = x_new[i, :] + k * \
+                    (np.abs(x_new[i, :] - x_worst)/(f_i - f_w + varepsilon))
 
+        # 对当前位置进行检查，判断是否合法
+        x[x > x_max] = x_max
+        x[x < x_min] = x_min
         # 如果当前位置要好于历史位置，则更新
         for i in range(N):
             if fitness(x_new[i, :]) < fitness(x[i, :]):
