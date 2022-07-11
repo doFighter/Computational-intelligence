@@ -123,7 +123,7 @@ def Adaptive_Parameters(c, fitness, f, curState, lastState, pBest, gBest, dim, x
     return [w, c, lastState, gBest, pBest, x]
 
 
-def Evolutionary_States_Etimation(c, fitness, N, curState, lastState, pBest, gBest, dim, x_max, x_min, iterate, iterate_max, x, gWorst_index):
+def Evolutionary_States_Etimation(c, fitness, N, curBest_index, curState, lastState, pBest, gBest, dim, x_max, x_min, iterate, iterate_max, x, gWorst_index):
     """
     进化状态评估函数
     :param c: 加速因子
@@ -146,7 +146,7 @@ def Evolutionary_States_Etimation(c, fitness, N, curState, lastState, pBest, gBe
     for i in range(N):
         sum_d = np.sum(((x[i, :] - x) ** 2), 1)
         distance[i] = np.sum(sum_d ** 0.5) / (N - 1)
-    d_g = distance[curState]
+    d_g = distance[curBest_index]
     d_max = max(distance)
     d_min = min(distance)
     if d_min == d_max:
@@ -179,8 +179,8 @@ def APSO(N, dim, x_min, x_max, iterate_max, fitness):
     x = x_min + (x_max - x_min) * np.random.random([N, dim])
     v = v_min + (v_max - v_min) * np.random.random([N, dim])
     pBest = x
-    curBest_index = 1
-    gWorst_index = 1
+    curBest_index = 0
+    gWorst_index = 0
     fitness_value[0] = fitness(x[0, :])
     for i in range(1, N):
         fitness_value[i] = fitness(x[i, :])
@@ -194,7 +194,7 @@ def APSO(N, dim, x_min, x_max, iterate_max, fitness):
         gBest_result[iterate] = fitness(gBest)
         # 进化状态评估
         [w, c, lastState, gBest, pBest, x] = Evolutionary_States_Etimation(
-            c, fitness, N, curState, lastState, pBest, gBest, dim, x_max, x_min, iterate, iterate_max, x, gWorst_index)
+            c, fitness, N, curBest_index, curState, lastState, pBest, gBest, dim, x_max, x_min, iterate, iterate_max, x, gWorst_index)
         v = w * v + c[0] * np.random.random([N, dim]) * (
             pBest - x) + c[1] * np.random.random([N, dim]) * (gBest - x)
         v[v < v_min] = v_min
