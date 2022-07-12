@@ -34,13 +34,16 @@ def AWPSO(N, dim, x_min, x_max, iterate_max, fitness):
     while iterate < iterate_max:
         omega = 0.9 - 0.5 * (iterate / iterate_max)
         # 按照笔记中第一种方式计算距离
-        g_pi = np.sum(pBest - x, axis=1)
-        g_gi = np.sum(gBest - x, axis=1)
+        g_pi = np.sum(abs(pBest - x), axis=1)
+        g_gi = np.sum(abs(gBest - x), axis=1)
         # 按照第二种方式计算距离
         # g_pi = np.sum(pBest - x, axis=1) / dim
         # g_gi = np.sum(gBest - x, axis=1) / dim
         c_g_pi = Sigmoid(g_pi, m)
         c_g_gi = Sigmoid(g_gi, m)
+        # 普通数组转换为numpy数组
+        c_g_pi = np.expand_dims(np.array(c_g_pi), axis=0).T
+        c_g_gi = np.expand_dims(np.array(c_g_gi), axis=0).T
         v = omega * v + c_g_pi * np.random.random([N, dim]) * (pBest - x) + c_g_gi * np.random.random([N, dim]) * (gBest - x)
         # 对速度或位置超出规定的做相应的纠正
         v[v > v_max] = v_max
